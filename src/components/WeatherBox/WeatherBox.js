@@ -1,19 +1,33 @@
 import PickCity from '../PickCity/PickCity';
 import WeatherSummary from '../WeatherSummary/WeatherSummary';
 import Loader from '../Loader/Loader';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 const WeatherBox = props => {
 
+  const [ weather, setWeather ] = useState('');
+  const [ pending, setPending ] = useState(false);
+ 
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleCityChange = useCallback(city => {
+    setPending(true);
     console.log(city)
 
     fetch(`http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=0901dac43ab2dd08220f06d64d1a0920&units=metric`)
     
    .then(res => res.json())
    .then(data => {
-     console.log(data);
+
+      const weatherData = {
+        city: data.name,
+        temp: data.main.temp,
+        icon: data.weather[0].icon,
+        description: data.weather[0].main
+      };
+      setPending(false)
+      setWeather(weatherData)
+      console.log(weatherData);
    });
 
   }); 
@@ -21,8 +35,8 @@ const WeatherBox = props => {
   return (
     <section>
       <PickCity action={handleCityChange}/>
-      <WeatherSummary />
-      <Loader />
+      {weather && !pending && <WeatherSummary {...weather} /> }
+      {pending && <Loader /> }
     </section>
   )
 };
